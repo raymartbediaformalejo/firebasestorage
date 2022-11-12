@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=4, maximum-scale=1"
+    />
+  </head>
+  <body>
+    <div>
+      <input type="file" id="files" multiple /><br /><br />
+      <button id="send">Upload</button>
+      <p id="uploading"></p>
+      <progress value="0" max="100" id="progress"></progress>
+      <br /><br /><br /><br />
+
+      <input
+        type="text"
+        name="nombre"
+        id="name"
+        value="hello.wav"
+      /><br /><br />
+      <button id="get_url">Get url file</button>
+      <p id="response"></p>
+
+      <button id="list_files">List files</button>
+      <p id="response_list"></p>
+    </div>
+
+    <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/7.15.1/firebase-storage.js"></script>
+
+    <script>
+      const firebaseConfig = {
+        apiKey: "AIzaSyACT-rrrHAkHGEyO6dmj_vvkkRGww0tHHo",
+        authDomain: "secondproject-668a4.firebaseapp.com",
+        databaseURL: "https://secondproject-668a4-default-rtdb.firebaseio.com",
+        projectId: "secondproject-668a4",
+        storageBucket: "secondproject-668a4.appspot.com",
+        messagingSenderId: "1012207364932",
+        appId: "1:1012207364932:web:3b0dec4575aa3339d4c511",
+        measurementId: "G-CGPG88ZPJF",
+      };
+      firebase.initializeApp(firebaseConfig);
+    </script>
+
+    <script>
+      //// CHOICE /////
+      var files = [];
+      document.getElementById("files").addEventListener("change", function (e) {
+        files = e.target.files;
+      });
+
+      ///// SEND FILES //////
+      document.getElementById("send").addEventListener("click", function () {
+        if (files.length != 0) {
+          for (let i = 0; i < files.length; i++) {
+            var storage = firebase.storage().ref(files[i].name);
+            var upload = storage.put(files[i]);
+            upload.on(
+              "state_changed",
+              function progress(snapshot) {
+                var percentage =
+                  (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+                document.getElementById("progress").value = percentage;
+              },
+
+              function error() {
+                alert("Error uploading file.");
+              },
+
+              function complete() {
+                document.getElementById(
+                  "uploading"
+                ).innerHTML += `${files[i].name} uploaded <br />`;
+              }
+            );
+          }
+        } else {
+          alert("No file chosen.");
+        }
+      });
+      ////////////////////////////////////
+
+      // GET URL ////////////////////
+      document.getElementById("get_url").addEventListener("click", function () {
+        var get_url_file = document.getElementById("name").value;
+        var storage = firebase.storage().ref(get_url_file);
+        storage
+          .getDownloadURL()
+          .then(function (url) {
+            document.getElementById("response").innerHTML += `${url}  <br />`;
+          })
+          .catch(function (error) {
+            alert("Error encountered.");
+          });
+      });
+      ////////////////////////////////////
+
+      // LIST FILES ////////////////////
+      document
+        .getElementById("list_files")
+        .addEventListener("click", function () {
+          var storageRef = firebase.storage().ref();
+          storageRef
+            .listAll()
+            .then(function (result) {
+              result.items.forEach(function (urlFile) {
+                document.getElementById(
+                  "response_list"
+                ).innerHTML += `${urlFile}  <br />`;
+              });
+            })
+            .catch(function (error) {
+              alert("No file chosen.");
+            });
+        });
+
+      ////////////////////////////////////
+    </script>
+  </body>
+</html>
